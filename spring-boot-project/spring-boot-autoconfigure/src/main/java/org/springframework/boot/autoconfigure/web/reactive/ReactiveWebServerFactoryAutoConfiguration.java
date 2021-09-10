@@ -52,7 +52,7 @@ import org.springframework.web.server.adapter.ForwardedHeaderTransformer;
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(ReactiveHttpInputMessage.class)
-@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)   //如果WebApplicationType的类型为REACTIVE，那么这个配置文件就会被解析
 @EnableConfigurationProperties(ServerProperties.class)
 @Import({ ReactiveWebServerFactoryAutoConfiguration.BeanPostProcessorsRegistrar.class,
 		ReactiveWebServerFactoryConfiguration.EmbeddedTomcat.class,
