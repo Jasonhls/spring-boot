@@ -76,6 +76,7 @@ public class ReactiveWebServerApplicationContext extends GenericReactiveWebAppli
 	protected void onRefresh() {
 		super.onRefresh();
 		try {
+			//创建WebServer
 			createWebServer();
 		}
 		catch (Throwable ex) {
@@ -91,6 +92,9 @@ public class ReactiveWebServerApplicationContext extends GenericReactiveWebAppli
 			ReactiveWebServerFactory webServerFactory = getWebServerFactory(webServerFactoryBeanName);
 			createWebServer.tag("factory", webServerFactory.getClass().toString());
 			boolean lazyInit = getBeanFactory().getBeanDefinition(webServerFactoryBeanName).isLazyInit();
+			/**
+			 * 创建ServerManager实例对象
+			 */
 			this.serverManager = new WebServerManager(this, webServerFactory, this::getHttpHandler, lazyInit);
 			getBeanFactory().registerSingleton("webServerGracefulShutdown",
 					new WebServerGracefulShutdownLifecycle(this.serverManager.getWebServer()));

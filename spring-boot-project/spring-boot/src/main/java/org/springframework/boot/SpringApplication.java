@@ -281,6 +281,7 @@ public class SpringApplication {
 		this.resourceLoader = resourceLoader;
 		Assert.notNull(primarySources, "PrimarySources must not be null");
 		this.primarySources = new LinkedHashSet<>(Arrays.asList(primarySources));
+		//根据是否有DispatcherHandler类Class文件，DispatcherServlet类的Class文件，判断WebApplicationType的类型
 		this.webApplicationType = WebApplicationType.deduceFromClasspath();
 		this.bootstrapRegistryInitializers = getBootstrapRegistryInitializersFromSpringFactories();
 		setInitializers((Collection) getSpringFactoriesInstances(ApplicationContextInitializer.class));

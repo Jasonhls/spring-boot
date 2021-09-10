@@ -40,6 +40,8 @@ public interface ApplicationContextFactory {
 	/**
 	 * A default {@link ApplicationContextFactory} implementation that will create an
 	 * appropriate context for the {@link WebApplicationType}.
+	 * 根据WebApplicationType的类型创建对应的上下文对象， Servet对应上下文对象为AnnotationConfigServletWebServerApplicationContext
+	 * Reactive对应上下文对象为AnnotationConfigReactiveWebServerApplicationContext
 	 */
 	ApplicationContextFactory DEFAULT = (webApplicationType) -> {
 		try {
