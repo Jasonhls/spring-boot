@@ -38,8 +38,10 @@ class WebServerManager {
 
 	private final ReactiveWebServerApplicationContext applicationContext;
 
+	//上层方法处理者的抽象
 	private final DelayedInitializationHttpHandler handler;
 
+	//底层服务器的抽象
 	private final WebServer webServer;
 
 	WebServerManager(ReactiveWebServerApplicationContext applicationContext, ReactiveWebServerFactory factory,

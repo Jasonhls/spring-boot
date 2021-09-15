@@ -54,9 +54,12 @@ import org.springframework.http.client.reactive.ReactorResourceFactory;
  */
 abstract class ReactiveWebServerFactoryConfiguration {
 
+	/**
+	 * HttpServer的Class是怎么来的
+	 */
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnMissingBean(ReactiveWebServerFactory.class)
-	@ConditionalOnClass({ HttpServer.class })
+	@ConditionalOnClass({ HttpServer.class })   //如果存在HttpServer这个Class，就创建下面这个静态类
 	static class EmbeddedNetty {
 
 		@Bean
@@ -65,6 +68,9 @@ abstract class ReactiveWebServerFactoryConfiguration {
 			return new ReactorResourceFactory();
 		}
 
+		/**
+		 * 把NettyReactiveWebServerFactory注入到spring容器中
+		 */
 		@Bean
 		NettyReactiveWebServerFactory nettyReactiveWebServerFactory(ReactorResourceFactory resourceFactory,
 				ObjectProvider<NettyRouteProvider> routes, ObjectProvider<NettyServerCustomizer> serverCustomizers) {
@@ -79,7 +85,7 @@ abstract class ReactiveWebServerFactoryConfiguration {
 
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnMissingBean(ReactiveWebServerFactory.class)
-	@ConditionalOnClass({ org.apache.catalina.startup.Tomcat.class })
+	@ConditionalOnClass({ org.apache.catalina.startup.Tomcat.class })  //如果存在Tomcat这个Class，就创建下面这个静态类
 	static class EmbeddedTomcat {
 
 		@Bean
@@ -101,7 +107,7 @@ abstract class ReactiveWebServerFactoryConfiguration {
 
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnMissingBean(ReactiveWebServerFactory.class)
-	@ConditionalOnClass({ org.eclipse.jetty.server.Server.class, ServletHolder.class })
+	@ConditionalOnClass({ org.eclipse.jetty.server.Server.class, ServletHolder.class })  //如果存在org.eclipse.jetty.server.Server.class, ServletHolder.class，就创建下面这个静态类
 	static class EmbeddedJetty {
 
 		@Bean
@@ -123,7 +129,7 @@ abstract class ReactiveWebServerFactoryConfiguration {
 
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnMissingBean(ReactiveWebServerFactory.class)
-	@ConditionalOnClass({ Undertow.class })
+	@ConditionalOnClass({ Undertow.class })  //如果存在Undertow这个Class，就创建下面这个静态类
 	static class EmbeddedUndertow {
 
 		@Bean

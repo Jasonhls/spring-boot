@@ -89,6 +89,11 @@ public class ReactiveWebServerApplicationContext extends GenericReactiveWebAppli
 		if (serverManager == null) {
 			StartupStep createWebServer = this.getApplicationStartup().start("spring.boot.webserver.create");
 			String webServerFactoryBeanName = getWebServerFactoryBeanName();
+			/**
+			 * getWebServerFactory() 默认返回为NettyReactiveWebServerFactory，原因是因为spring-boot-starter-webflux包默认包含spring-boot-starter-reactor-netty包，
+			 * 该包又包含了reactor-netty-http，因此会加载HttpServer.class这个class，然后由于spring-boot-autoconfigure项目会自动解析配置类ReactiveWebServerFactoryAutoConfiguration，
+			 * 该配置又import了配置类ReactiveWebServerFactoryConfiguration，在ReactiveWebServerFactoryConfiguration配置类中因为有HttpServer.class，因此会默认使用Netty容器。
+			 */
 			ReactiveWebServerFactory webServerFactory = getWebServerFactory(webServerFactoryBeanName);
 			createWebServer.tag("factory", webServerFactory.getClass().toString());
 			boolean lazyInit = getBeanFactory().getBeanDefinition(webServerFactoryBeanName).isLazyInit();
