@@ -83,7 +83,11 @@ public class NettyWebServer implements WebServer {
 		Assert.notNull(httpServer, "HttpServer must not be null");
 		Assert.notNull(handlerAdapter, "HandlerAdapter must not be null");
 		this.lifecycleTimeout = lifecycleTimeout;
+		/**
+		 * 传入的handlerAdapter为ReactorHttpHandlerAdapter，它的属性httpHandler为DelayedInitializationHttpHandler
+		 */
 		this.handler = handlerAdapter;
+		//对入参httpServer对象(其实为HttpServerBind对象)拷贝一份，并赋值给this.httpServer
 		this.httpServer = httpServer.channelGroup(new DefaultChannelGroup(new DefaultEventExecutor()));
 		this.gracefulShutdown = (shutdown == Shutdown.GRACEFUL) ? new GracefulShutdown(() -> this.disposableServer)
 				: null;
@@ -97,6 +101,9 @@ public class NettyWebServer implements WebServer {
 	public void start() throws WebServerException {
 		if (this.disposableServer == null) {
 			try {
+				/**
+				 * 启动reactive web容器的核心方法：使用netty-http创建HttpServer对象并执行bindNow()方法
+				 */
 				this.disposableServer = startHttpServer();
 			}
 			catch (Exception ex) {
@@ -110,6 +117,9 @@ public class NettyWebServer implements WebServer {
 			if (this.disposableServer != null) {
 				logger.info("Netty started" + getStartedOnMessage(this.disposableServer));
 			}
+			/**
+			 * 开启线程来启动HttpServer，用法同reactor-netty-http中启动server的方法
+			 */
 			startDaemonAwaitThread(this.disposableServer);
 		}
 	}
@@ -131,9 +141,23 @@ public class NettyWebServer implements WebServer {
 		}
 	}
 
+	/**
+	 * 参考netty-http中创建HttpServer的方法
+	 * @return
+	 */
 	DisposableServer startHttpServer() {
+		/**
+		 * this.httpServer为HttpServerTcpConfig（父类为HttpServer）对象
+		 */
 		HttpServer server = this.httpServer;
 		if (this.routeProviders.isEmpty()) {
+			/**
+			 * 核心逻辑：
+			 * 在NettyWebServer的构造函数中this.handler被赋值为ReactorHttpHandlerAdapter对象
+			 * 会将this.handler包装在HttpServerHandle对象中，并将HttpServerHandle作为一个节点传入到Netty的处理链中，
+			 * 这样在处理请求的时候，会调用到netty的处理链，就会经过这个HttpServerhandle，进而调用到它的属性handler(即ReactorHttpHandlerAdapter)
+			 * 的apply方法。
+			 */
 			server = server.handle(this.handler);
 		}
 		else {
@@ -173,6 +197,9 @@ public class NettyWebServer implements WebServer {
 	}
 
 	private void startDaemonAwaitThread(DisposableServer disposableServer) {
+		/**
+		 * 开启线程来启动HttpServer
+		 */
 		Thread awaitThread = new Thread("server") {
 
 			@Override

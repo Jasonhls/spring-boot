@@ -62,6 +62,11 @@ public class HttpHandlerAutoConfiguration {
 
 		@Bean
 		public HttpHandler httpHandler(ObjectProvider<WebFluxProperties> propsProvider) {
+			/**
+			 * 返回的是HttpWebHandlerAdapter对象，该对象的父类(WebHandlerDecorator)属性delete为ExceptionHandingWebHandler对象，
+			 * 该对象又包装了FilteringWebHandler对象，该对象包装了通过@EnableWebFlux注入的DispatcherHandler对象。
+			 * 具体详细看WebHttpHandlerBuilder的applicationContext方法和build方法。
+			 */
 			HttpHandler httpHandler = WebHttpHandlerBuilder.applicationContext(this.applicationContext).build();
 			WebFluxProperties properties = propsProvider.getIfAvailable();
 			if (properties != null && StringUtils.hasText(properties.getBasePath())) {

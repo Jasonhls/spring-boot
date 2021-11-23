@@ -40,8 +40,10 @@ class WebServerStartStopLifecycle implements SmartLifecycle {
 
 	@Override
 	public void start() {
+		//spring-boot-starter-web的上下文为Servlet类型的时候，启动容器（spring-boot-starter-web默认容器为tomcat）
 		this.webServer.start();
 		this.running = true;
+		//发布ServerWeb容器初始化的ApplicationEvent
 		this.applicationContext
 				.publishEvent(new ServletWebServerInitializedEvent(this.webServer, this.applicationContext));
 	}

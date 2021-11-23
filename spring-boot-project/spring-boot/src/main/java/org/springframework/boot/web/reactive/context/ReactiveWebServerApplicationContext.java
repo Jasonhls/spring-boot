@@ -76,7 +76,9 @@ public class ReactiveWebServerApplicationContext extends GenericReactiveWebAppli
 	protected void onRefresh() {
 		super.onRefresh();
 		try {
-			//创建WebServer
+			/**
+			 * 创建ReactiveWebServer，即创建Reactive web容器并启动
+			 */
 			createWebServer();
 		}
 		catch (Throwable ex) {
@@ -93,16 +95,25 @@ public class ReactiveWebServerApplicationContext extends GenericReactiveWebAppli
 			 * getWebServerFactory() 默认返回为NettyReactiveWebServerFactory，原因是因为spring-boot-starter-webflux包默认包含spring-boot-starter-reactor-netty包，
 			 * 该包又包含了reactor-netty-http，因此会加载HttpServer.class这个class，然后由于spring-boot-autoconfigure项目会自动解析配置类ReactiveWebServerFactoryAutoConfiguration，
 			 * 该配置又import了配置类ReactiveWebServerFactoryConfiguration，在ReactiveWebServerFactoryConfiguration配置类中因为有HttpServer.class，因此会默认使用Netty容器。
+			 *
+			 * 比如网关项目，用到了spring-cloud-starter-gateway包，该包本身就包含了spring-boot-starter-webflux包，因此默认也是使用Netty容器。
 			 */
 			ReactiveWebServerFactory webServerFactory = getWebServerFactory(webServerFactoryBeanName);
 			createWebServer.tag("factory", webServerFactory.getClass().toString());
 			boolean lazyInit = getBeanFactory().getBeanDefinition(webServerFactoryBeanName).isLazyInit();
 			/**
-			 * 创建ServerManager实例对象
+			 * 创建ServerManager实例对象，this::getHttpHandler得到一个Supplier<HttpHandler>作为入参，this.getHttpHandler()方法现在不会调用，只有
+			 * 在调用到supplier.get()方法的时候才会去调用this.getHttpHandler()方法，在WebServerManager#start()方法中this.handler.initializeHandler()调用到
+			 *参考jdk8中Supplier<?>用法
 			 */
 			this.serverManager = new WebServerManager(this, webServerFactory, this::getHttpHandler, lazyInit);
+			//注册关闭容器的LifeCycle
 			getBeanFactory().registerSingleton("webServerGracefulShutdown",
 					new WebServerGracefulShutdownLifecycle(this.serverManager.getWebServer()));
+			//注册容器启动的LifeCycle
+			/**
+			 * 通过执行WebServerStartStopLifecycle的start方法来启动reactive web容器
+			 */
 			getBeanFactory().registerSingleton("webServerStartStop",
 					new WebServerStartStopLifecycle(this.serverManager));
 			createWebServer.end();
@@ -135,6 +146,10 @@ public class ReactiveWebServerApplicationContext extends GenericReactiveWebAppli
 	 */
 	protected HttpHandler getHttpHandler() {
 		// Use bean names so that we don't consider the hierarchy
+		/**
+		 * springboot模块spring-boot-autoconfigure项目META-INF目录下的spring.factories中配置有HttpHandlerAutoConfiguration，
+		 * 会自动解析配置类HttpHandlerAutoConfiguration，会注入HttpHandler的bean定义，注入的bean对应的class类型为HttpWebHandlerAdapter
+		 */
 		String[] beanNames = getBeanFactory().getBeanNamesForType(HttpHandler.class);
 		if (beanNames.length == 0) {
 			throw new ApplicationContextException(

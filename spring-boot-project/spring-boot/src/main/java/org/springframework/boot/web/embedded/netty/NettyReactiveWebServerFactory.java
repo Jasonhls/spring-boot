@@ -67,8 +67,15 @@ public class NettyReactiveWebServerFactory extends AbstractReactiveWebServerFact
 
 	@Override
 	public WebServer getWebServer(HttpHandler httpHandler) {
+		//返回单例HttpServerBind对象
 		HttpServer httpServer = createHttpServer();
+		/**
+		 * 传入的httpHandler为DelayedInitializationHttpHandler，赋值给ReactorHttpHandlerAdapter的属性httpHandler
+		 */
 		ReactorHttpHandlerAdapter handlerAdapter = new ReactorHttpHandlerAdapter(httpHandler);
+		/**
+		 * 将上面创建的ReactorHttpHandlerAdapter传给NettyWebServer的handler属性。
+		 */
 		NettyWebServer webServer = createNettyWebServer(httpServer, handlerAdapter, this.lifecycleTimeout,
 				getShutdown());
 		webServer.setRouteProviders(this.routeProviders);

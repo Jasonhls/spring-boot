@@ -49,11 +49,19 @@ class WebServerManager {
 		this.applicationContext = applicationContext;
 		Assert.notNull(factory, "Factory must not be null");
 		this.handler = new DelayedInitializationHttpHandler(handlerSupplier, lazyInit);
+		/**
+		 * 默认的factory为NettyReactiveWebServerFactory
+		 */
 		this.webServer = factory.getWebServer(this.handler);
 	}
 
 	void start() {
+		//实例化HttpHandler，通过调用ReactiveWebServerApplicationContext.getHttpHandler方法，该方法通过调用getBean方法实例化WebServerManager对象的属性HttpHandler
+		//上述实例化得到的对象为HttpWebHandlerAdapter(封装了通过@EanbleWebflux注入的DispatcherHandler对象)，把该对象封装到DelayedInitializationHttpHandler对象的delegate属性中。
 		this.handler.initializeHandler();
+		/**
+		 * 启动WebServer容器，默认为NettyWebServer
+		 */
 		this.webServer.start();
 		this.applicationContext
 				.publishEvent(new ReactiveWebServerInitializedEvent(this.webServer, this.applicationContext));
@@ -84,6 +92,8 @@ class WebServerManager {
 
 		private final boolean lazyInit;
 
+		//生成的delegate是HttpWebHandlerAdapter对象，它包装ExceptionHandlingWebHandler实例（
+		// 它又包装了FilteringWebHandler对象，FilteringWebHandler对象又封装DispatcherHandler实例）
 		private volatile HttpHandler delegate = this::handleUninitialized;
 
 		private DelayedInitializationHttpHandler(Supplier<HttpHandler> handlerSupplier, boolean lazyInit) {
@@ -95,11 +105,25 @@ class WebServerManager {
 			throw new IllegalStateException("The HttpHandler has not yet been initialized");
 		}
 
+		/**
+		 * 处理响应式http请求的核心方法
+		 * @param request
+		 * @param response
+		 * @return
+		 */
 		@Override
 		public Mono<Void> handle(ServerHttpRequest request, ServerHttpResponse response) {
+			/**
+			 * 处理响应式http请求的核心方法
+			 * this.delegate为Spring中的HttpWebHandlerAdapter对象
+			 */
 			return this.delegate.handle(request, response);
 		}
 
+		/**
+		 * NettyWebServer容器启动的时候会调用这个方法，响应式的上下文对象为ReactiveWebServerApplicationContext，
+		 * 通过调用它的属性serverManager(属于WebServerManager对象)的start方法启动reactive web容器
+		 */
 		void initializeHandler() {
 			this.delegate = this.lazyInit ? new LazyHttpHandler(this.handlerSupplier) : this.handlerSupplier.get();
 		}

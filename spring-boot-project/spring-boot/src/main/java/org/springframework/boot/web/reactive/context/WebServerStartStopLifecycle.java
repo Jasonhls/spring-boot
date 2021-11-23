@@ -37,6 +37,7 @@ class WebServerStartStopLifecycle implements SmartLifecycle {
 
 	@Override
 	public void start() {
+		//spring-boot-starter-webflux的上下文类型为Reactive的时候，启动容器（spring-boot-starter-webflux默认对应的容器为Netty）
 		this.weServerManager.start();
 		this.running = true;
 	}
